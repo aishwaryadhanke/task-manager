@@ -6,7 +6,7 @@ function Register({ setIsLoginPage }) {
   const [password, setPassword] = useState("");
 
   const handleRegister = () => {
-    axios.post("http://127.0.0.1:8000/register/", {   // ✅ FIXED CONSISTENCY
+    axios.post("http://100.54.235.34:8000/register/", {   // ✅ FIXED URL
       username,
       password
     })
