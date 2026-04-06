@@ -17,7 +17,8 @@ function TaskList({ openModal, setOpenModal }) {
     dueDate: ""
   });
 
-  const API = process.env.REACT_APP_API_URL;
+  // ✅ FIXED API URL (IMPORTANT)
+  const API = "http://98.94.56.218:8000";
 
   const getHeader = () => ({
     headers: {
