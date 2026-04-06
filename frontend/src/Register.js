@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import axios from "axios";
 
@@ -6,8 +5,11 @@ function Register({ setIsLoginPage }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  // ✅ Dynamic backend URL (auto uses current IP)
+  const BASE_URL = `http://${window.location.hostname}:8000`;
+
   const handleRegister = () => {
-    axios.post("http://3.86.226.26:8000/register/", {   // ✅ CORRECT NEW IP
+    axios.post(`${BASE_URL}/register/`, {
       username,
       password
     })
