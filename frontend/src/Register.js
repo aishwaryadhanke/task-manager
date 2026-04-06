@@ -5,8 +5,11 @@ function Register({ setIsLoginPage }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  // ✅ Dynamic backend URL (auto uses current IP)
+  const BASE_URL = `http://${window.location.hostname}:8000`;
+
   const handleRegister = () => {
-    axios.post("http://127.0.0.1:8000/register/", {   // ✅ FIXED CONSISTENCY
+    axios.post(`${BASE_URL}/register/`, {
       username,
       password
     })
