@@ -9,7 +9,7 @@ function Login({ setIsLoggedIn, setIsLoginPage }) {
   const handleLogin = () => {
     setError("");
 
-    axios.post("http://127.0.0.1:8000/login/", {   // ✅ FIXED HERE
+    axios.post("http://98.94.56.218:8000/login/", {   // ✅ FIXED URL
       username,
       password
     })
@@ -53,7 +53,6 @@ function Login({ setIsLoggedIn, setIsLoginPage }) {
           Login
         </button>
 
-        {/* ✅ CLEAN ERROR (NO ALERT) */}
         {error && <p className="text-red-500 mt-3">{error}</p>}
 
         <p
