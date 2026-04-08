@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from pymongo import MongoClient
 from django.contrib.auth.models import User
-from bson import ObjectId  # 🔥 IMPORTANT
+from bson import ObjectId   # ✅ IMPORTANT
 
 # 🔥 CONNECT TO MONGODB (Docker)
 client = MongoClient("mongodb://mongo:27017/")
@@ -17,10 +17,9 @@ collection = db["tasks"]
 def get_tasks(request):
     try:
         if request.method == 'GET':
-
             tasks = list(collection.find({"user": request.user.username}))
 
-            # 🔥 FIX: convert ObjectId → string
+            # ✅ FIX: convert ObjectId → string
             for task in tasks:
                 task["_id"] = str(task["_id"])
 
@@ -46,7 +45,7 @@ def get_tasks(request):
 @permission_classes([IsAuthenticated])
 def task_detail(request, id):
     try:
-        object_id = ObjectId(id)  # 🔥 convert string → ObjectId
+        object_id = ObjectId(id)  # ✅ FIX
 
         if request.method == 'PUT':
             updated = collection.update_one(
