@@ -1,16 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TaskList from "./components/TaskList";
 import Login from "./Login";
 import Register from "./Register";
 import profilePic from "./assets/profile.jpg";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    localStorage.getItem("token") ? true : false
-  );
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoginPage, setIsLoginPage] = useState(true);
   const [openModal, setOpenModal] = useState(false);
+
+  // ✅ FIX: check token properly on load
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400">
@@ -48,6 +53,7 @@ function App() {
             <button
               onClick={() => {
                 localStorage.removeItem("token");
+                localStorage.removeItem("refresh"); // ✅ IMPORTANT
                 setIsLoggedIn(false);
               }}
               className="mt-auto bg-red-400 hover:bg-red-500 transition text-white px-4 py-2 rounded-xl w-full shadow-sm"

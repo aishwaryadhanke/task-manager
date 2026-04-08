@@ -4,14 +4,29 @@ import axios from "axios";
 function Register({ setIsLoginPage }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // ✅ FIXED: Use Elastic IP
   const BASE_URL = "http://52.45.97.28:8000";
 
   const handleRegister = () => {
+
+    // ✅ PREVENT MULTIPLE CLICKS
+    if (loading) return;
+
+    // ✅ TRIM INPUTS
+    const cleanUsername = username.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanUsername || !cleanPassword) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    setLoading(true);
+
     axios.post(`${BASE_URL}/register/`, {
-      username,
-      password
+      username: cleanUsername,
+      password: cleanPassword
     })
     .then(() => {
       alert("User registered successfully ✅");
@@ -20,6 +35,9 @@ function Register({ setIsLoginPage }) {
     .catch((err) => {
       console.log(err.response?.data);
       alert(err.response?.data?.error || "Error registering user");
+    })
+    .finally(() => {
+      setLoading(false);
     });
   };
 
@@ -47,9 +65,10 @@ function Register({ setIsLoginPage }) {
 
         <button
           onClick={handleRegister}
+          disabled={loading}
           className="w-full bg-green-500 text-white py-2 rounded-lg"
         >
-          Register
+          {loading ? "Registering..." : "Register"}
         </button>
 
         <p

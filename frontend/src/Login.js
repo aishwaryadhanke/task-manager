@@ -6,7 +6,6 @@ function Login({ setIsLoggedIn, setIsLoginPage }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // ✅ USE EC2 ELASTIC IP
   const BASE_URL = "http://52.45.97.28:8000";
 
   const handleLogin = () => {
@@ -17,8 +16,17 @@ function Login({ setIsLoggedIn, setIsLoginPage }) {
       password
     })
     .then((res) => {
-      localStorage.setItem("token", res.data.access);
-      setIsLoggedIn(true);
+
+      // ✅ SAFETY CHECK
+      if (res.data.access && res.data.refresh) {
+        localStorage.setItem("token", res.data.access);
+        localStorage.setItem("refresh", res.data.refresh);
+
+        setIsLoggedIn(true);
+      } else {
+        setError("Login failed. Try again.");
+      }
+
     })
     .catch((err) => {
       console.log(err.response?.data);
@@ -56,7 +64,6 @@ function Login({ setIsLoggedIn, setIsLoginPage }) {
           Login
         </button>
 
-        {/* ✅ ERROR MESSAGE */}
         {error && <p className="text-red-500 mt-3">{error}</p>}
 
         <p

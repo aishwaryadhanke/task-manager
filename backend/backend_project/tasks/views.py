@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from pymongo import MongoClient
 from django.contrib.auth.models import User
+from bson import ObjectId  # 🔥 IMPORTANT
 
 # 🔥 CONNECT TO MONGODB (Docker)
 client = MongoClient("mongodb://mongo:27017/")
@@ -16,10 +17,13 @@ collection = db["tasks"]
 def get_tasks(request):
     try:
         if request.method == 'GET':
-            tasks = list(collection.find(
-                {"user": request.user.username},
-                {"_id": 0}
-            ))
+
+            tasks = list(collection.find({"user": request.user.username}))
+
+            # 🔥 FIX: convert ObjectId → string
+            for task in tasks:
+                task["_id"] = str(task["_id"])
+
             return Response(tasks)
 
         if request.method == 'POST':
@@ -42,9 +46,11 @@ def get_tasks(request):
 @permission_classes([IsAuthenticated])
 def task_detail(request, id):
     try:
+        object_id = ObjectId(id)  # 🔥 convert string → ObjectId
+
         if request.method == 'PUT':
             updated = collection.update_one(
-                {"id": int(id), "user": request.user.username},
+                {"_id": object_id, "user": request.user.username},
                 {"$set": request.data}
             )
 
@@ -55,7 +61,7 @@ def task_detail(request, id):
 
         if request.method == 'DELETE':
             deleted = collection.delete_one(
-                {"id": int(id), "user": request.user.username}
+                {"_id": object_id, "user": request.user.username}
             )
 
             if deleted.deleted_count == 0:
@@ -74,7 +80,6 @@ def register(request):
         username = request.data.get("username")
         password = request.data.get("password")
 
-        # ✅ VALIDATION (VERY IMPORTANT)
         if not username or not password:
             return Response({"error": "Username and password required"})
 

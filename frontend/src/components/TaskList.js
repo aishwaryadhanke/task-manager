@@ -17,46 +17,70 @@ function TaskList({ openModal, setOpenModal }) {
     dueDate: ""
   });
 
-  // ✅ Your API
   const API = "http://52.45.97.28:8000";
 
-  // ✅ FIX 1: Safe token handling
-  const getHeader = () => {
-    const token = localStorage.getItem("token");
+  const getHeader = () => ({
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    }
+  });
 
-    if (!token) return {}; // avoid sending null token
+  const refreshToken = async () => {
+    try {
+      const res = await axios.post(`${API}/token/refresh/`, {
+        refresh: localStorage.getItem("refresh")
+      });
 
-    return {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    };
+      localStorage.setItem("token", res.data.access);
+      return true;
+
+    } catch (err) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refresh");
+      window.location.reload();
+      return false;
+    }
   };
 
-  // ✅ FIX 2: Proper error handling
-  const handleAuthError = (err) => {
+  const handleAuthError = async (err, retryFn) => {
     if (err.response?.status === 401) {
-      alert("Session expired. Please login again");
-      localStorage.removeItem("token");
-      window.location.reload();
+      const success = await refreshToken();
+
+      if (success && retryFn) {
+        retryFn();
+      }
     } else {
       console.log("Other error:", err);
     }
   };
 
-  // ✅ FIX 3: Safe API response
+  // ✅ 🔥 FIXED HERE (ONLY REAL CHANGE)
   const fetchTasks = () => {
     axios
       .get(`${API}/tasks/`, getHeader())
       .then((res) => {
+        console.log("RAW DATA:", res.data);
+
         if (Array.isArray(res.data)) {
-          setTasks(res.data);
+
+          const fixedTasks = res.data.map(task => ({
+            ...task,
+            id:
+              task.id ||
+              task._id ||
+              task._id?.$oid ||   // 🔥 MAIN FIX
+              null
+          }));
+
+          console.log("FIXED TASKS:", fixedTasks);
+
+          setTasks(fixedTasks);
+
         } else {
-          console.log("Invalid data:", res.data);
           setTasks([]);
         }
       })
-      .catch(handleAuthError);
+      .catch((err) => handleAuthError(err, fetchTasks));
   };
 
   useEffect(() => {
@@ -75,7 +99,7 @@ function TaskList({ openModal, setOpenModal }) {
 
     if (editId) {
       axios.put(
-        `${API}/tasks/${editId}/`,
+        `${API}/tasks/${editId}`,
         { ...form },
         getHeader()
       )
@@ -84,16 +108,14 @@ function TaskList({ openModal, setOpenModal }) {
         setToast("Task updated ✅");
         resetForm();
       })
-      .catch(handleAuthError);
+      .catch((err) => handleAuthError(err, handleAddTask));
 
     } else {
       axios.post(
         `${API}/tasks/`,
         {
-          id: Date.now(),
           ...form,
-          completed: false,
-          createdAt: new Date().toLocaleString()
+          completed: false
         },
         getHeader()
       )
@@ -102,7 +124,7 @@ function TaskList({ openModal, setOpenModal }) {
         setToast("Task added successfully ✅");
         resetForm();
       })
-      .catch(handleAuthError);
+      .catch((err) => handleAuthError(err, handleAddTask));
     }
   };
 
@@ -119,6 +141,9 @@ function TaskList({ openModal, setOpenModal }) {
   };
 
   const handleEdit = (t) => {
+    const id = t.id;
+    console.log("EDIT ID:", id);
+
     setForm({
       title: t.title,
       description: t.description || "",
@@ -126,32 +151,36 @@ function TaskList({ openModal, setOpenModal }) {
       category: t.category || "Personal",
       dueDate: t.dueDate || ""
     });
-    setEditId(t.id);
+    setEditId(id);
     setOpenModal(true);
   };
 
   const deleteTask = (id) => {
+    console.log("DELETE ID:", id);
+
     axios
-      .delete(`${API}/tasks/${id}/`, getHeader())
+      .delete(`${API}/tasks/${id}`, getHeader())
       .then(() => {
         fetchTasks();
         setToast("Task deleted ❌");
       })
-      .catch(handleAuthError);
+      .catch((err) => handleAuthError(err, () => deleteTask(id)));
   };
 
   const toggleTask = (t) => {
+    const id = t.id;
+    console.log("TOGGLE ID:", id);
+
     axios
       .put(
-        `${API}/tasks/${t.id}/`,
+        `${API}/tasks/${id}`,
         { ...t, completed: !t.completed },
         getHeader()
       )
       .then(() => fetchTasks())
-      .catch(handleAuthError);
+      .catch((err) => handleAuthError(err, () => toggleTask(t)));
   };
 
-  // ✅ FIX 4: Safe tasks
   const safeTasks = Array.isArray(tasks) ? tasks : [];
 
   const filtered = safeTasks.filter((t) =>
