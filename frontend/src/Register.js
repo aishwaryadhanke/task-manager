@@ -5,15 +5,15 @@ function Register({ setIsLoginPage }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // ✅ Dynamic backend URL (auto uses current IP)
-  const BASE_URL = `http://${window.location.hostname}:8000`;
+  // ✅ FIXED: Use Elastic IP
+  const BASE_URL = "http://52.45.97.28:8000";
 
   const handleRegister = () => {
     axios.post(`${BASE_URL}/register/`, {
       username,
       password
     })
-    .then((res) => {
+    .then(() => {
       alert("User registered successfully ✅");
       setIsLoginPage(true);
     })
@@ -25,7 +25,6 @@ function Register({ setIsLoginPage }) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-300 to-gray-400">
-      
       <div className="bg-white p-8 rounded-xl shadow-lg w-[320px] text-center">
         
         <h2 className="text-2xl font-bold mb-6">Register 📝</h2>

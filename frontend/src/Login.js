@@ -6,10 +6,13 @@ function Login({ setIsLoggedIn, setIsLoginPage }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  // ✅ USE EC2 ELASTIC IP
+  const BASE_URL = "http://52.45.97.28:8000";
+
   const handleLogin = () => {
     setError("");
 
-    axios.post("http://127.0.0.1:8000/login/", {   // ✅ FIXED HERE
+    axios.post(`${BASE_URL}/login/`, {
       username,
       password
     })
@@ -53,7 +56,7 @@ function Login({ setIsLoggedIn, setIsLoginPage }) {
           Login
         </button>
 
-        {/* ✅ CLEAN ERROR (NO ALERT) */}
+        {/* ✅ ERROR MESSAGE */}
         {error && <p className="text-red-500 mt-3">{error}</p>}
 
         <p

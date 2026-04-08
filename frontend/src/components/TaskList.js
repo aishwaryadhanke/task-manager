@@ -17,24 +17,45 @@ function TaskList({ openModal, setOpenModal }) {
     dueDate: ""
   });
 
-  const API = process.env.REACT_APP_API_URL;
+  // ✅ Your API
+  const API = "http://52.45.97.28:8000";
 
-  const getHeader = () => ({
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`
-    }
-  });
+  // ✅ FIX 1: Safe token handling
+  const getHeader = () => {
+    const token = localStorage.getItem("token");
 
-  const handleAuthError = () => {
-    alert("Session expired. Please login again");
-    localStorage.removeItem("token");
-    window.location.reload();
+    if (!token) return {}; // avoid sending null token
+
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
   };
 
+  // ✅ FIX 2: Proper error handling
+  const handleAuthError = (err) => {
+    if (err.response?.status === 401) {
+      alert("Session expired. Please login again");
+      localStorage.removeItem("token");
+      window.location.reload();
+    } else {
+      console.log("Other error:", err);
+    }
+  };
+
+  // ✅ FIX 3: Safe API response
   const fetchTasks = () => {
     axios
       .get(`${API}/tasks/`, getHeader())
-      .then((res) => setTasks(res.data))
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setTasks(res.data);
+        } else {
+          console.log("Invalid data:", res.data);
+          setTasks([]);
+        }
+      })
       .catch(handleAuthError);
   };
 
@@ -130,6 +151,19 @@ function TaskList({ openModal, setOpenModal }) {
       .catch(handleAuthError);
   };
 
+  // ✅ FIX 4: Safe tasks
+  const safeTasks = Array.isArray(tasks) ? tasks : [];
+
+  const filtered = safeTasks.filter((t) =>
+    t.title?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const activeTasks = filtered.filter((t) => !t.completed);
+  const completedTasks = filtered.filter((t) => t.completed);
+
+  const total = safeTasks.length;
+  const completed = safeTasks.filter((t) => t.completed).length;
+
   const getPriorityColor = (priority) => {
     if (priority === "High") return "bg-red-100 text-red-600";
     if (priority === "Low") return "bg-green-100 text-green-600";
@@ -161,16 +195,6 @@ function TaskList({ openModal, setOpenModal }) {
     if (due.getTime() === today.getTime()) return "Today";
     return "";
   };
-
-  const filtered = tasks.filter((t) =>
-    t.title.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const activeTasks = filtered.filter((t) => !t.completed);
-  const completedTasks = filtered.filter((t) => t.completed);
-
-  const total = tasks.length;
-  const completed = tasks.filter((t) => t.completed).length;
 
   return (
     <div className="w-full">

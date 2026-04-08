@@ -7,7 +7,6 @@ SECRET_KEY = 'django-insecure-^^q**rfm7^$qk^-)($j4fg+o@vm&na6*l717ns7!vk4054&qwo
 
 DEBUG = True
 
-# 🔥 VERY IMPORTANT (for Docker)
 ALLOWED_HOSTS = ['*']
 
 
@@ -27,7 +26,7 @@ INSTALLED_APPS = [
 ]
 
 
-# 🔥 MIDDLEWARE (ORDER FIXED)
+# 🔥 MIDDLEWARE
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 
@@ -35,7 +34,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
 
-    # ❗ CSRF disabled for API
+    # CSRF disabled for API
     # 'django.middleware.csrf.CsrfViewMiddleware',
 
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -69,7 +68,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend_project.wsgi.application'
 
 
-# (SQLite only for Django auth users)
+# 🔥 DATABASE
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -91,14 +90,25 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
-# 🔥 DRF + JWT
+# 🔥 DRF + JWT CONFIG (PRO LEVEL)
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
 
+
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    # 🔥 SHORT ACCESS TOKEN (for security)
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+
+    # 🔥 LONG REFRESH TOKEN (for auto login)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+
+    # 🔥 REQUIRED
     'AUTH_HEADER_TYPES': ('Bearer',),
+
+    # 🔥 OPTIONAL BUT GOOD
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
