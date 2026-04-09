@@ -54,7 +54,6 @@ function TaskList({ openModal, setOpenModal }) {
     }
   };
 
-  // ✅ 🔥 FIXED HERE (ONLY REAL CHANGE)
   const fetchTasks = () => {
     axios
       .get(`${API}/tasks/`, getHeader())
@@ -68,7 +67,7 @@ function TaskList({ openModal, setOpenModal }) {
             id:
               task.id ||
               task._id ||
-              task._id?.$oid ||   // 🔥 MAIN FIX
+              task._id?.$oid ||
               null
           }));
 
@@ -99,7 +98,7 @@ function TaskList({ openModal, setOpenModal }) {
 
     if (editId) {
       axios.put(
-        `${API}/tasks/${editId}`,
+        `${API}/tasks/${editId}/`,
         { ...form },
         getHeader()
       )
@@ -159,7 +158,7 @@ function TaskList({ openModal, setOpenModal }) {
     console.log("DELETE ID:", id);
 
     axios
-      .delete(`${API}/tasks/${id}`, getHeader())
+      .delete(`${API}/tasks/${id}/`, getHeader())
       .then(() => {
         fetchTasks();
         setToast("Task deleted ❌");
@@ -167,14 +166,24 @@ function TaskList({ openModal, setOpenModal }) {
       .catch((err) => handleAuthError(err, () => deleteTask(id)));
   };
 
+  // ✅🔥 FINAL FIXED FUNCTION
   const toggleTask = (t) => {
     const id = t.id;
     console.log("TOGGLE ID:", id);
 
+    const updatedData = {
+      title: t.title,
+      description: t.description || "",
+      priority: t.priority || "Medium",
+      category: t.category || "Personal",
+      dueDate: t.dueDate || "",
+      completed: !t.completed
+    };
+
     axios
       .put(
-        `${API}/tasks/${id}`,
-        { ...t, completed: !t.completed },
+        `${API}/tasks/${id}/`,
+        updatedData,
         getHeader()
       )
       .then(() => fetchTasks())
